@@ -1,0 +1,13 @@
+# Plasmaman Enviroment helmets
+
+# Normal Envirohelmet
+- type: entity
+  parent: ClothingHeadEnvirohelmetBase
+  id: ClothingHeadEnvirohelmet
+  name: enviro helmet
+  description: A special helmet designed for plasmamen to prevent them from combusting in the presence of oxygen.
+  components:
+  - type: Sprite
+    sprite: Clothing/Head/Envirohelmets/base.rsi
+  - type: Clothing
+    sprite: Clothing/Head/Envirohelmets/base.rsi
