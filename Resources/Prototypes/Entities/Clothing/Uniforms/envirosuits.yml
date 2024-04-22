@@ -1,0 +1,10 @@
+- type: entity
+  parent: ClothingEnvirosuitBase
+  id: ClothingUniformJumpsuitEnvirosuit
+  name: plasma enviro suit
+  description: An enviro suit used to prevent plasmamen from combusting.
+  components:
+  - type: Sprite
+    sprite: Clothing/Uniforms/Envirosuit/base.rsi
+  - type: Clothing
+    sprite: Clothing/Uniforms/Envirosuit/base.rsi

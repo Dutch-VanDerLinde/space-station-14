@@ -37,7 +37,6 @@
     slots: [innerclothing]
     femaleMask: UniformTop
 
-
 - type: entity
   abstract: true
   parent: UnsensoredClothingUniformBase
@@ -59,3 +58,20 @@
   - type: Clothing
     slots: [innerclothing]
     femaleMask: UniformTop
+
+- type: entity
+  abstract: true
+  parent: UnsensoredClothingUniformBase
+  id: UnsensoredClothingEnvirosuitBase
+  components:
+  - type: TemperatureProtection
+    coefficient: 0.5
+  - type: Armor
+    modifiers:
+      coefficients:
+        Heat: 0.9
+
+- type: entity
+  abstract: true
+  parent: [ClothingUniformBase, UnsensoredClothingEnvirosuitBase]
+  id: ClothingEnvirosuitBase
