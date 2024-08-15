@@ -16,6 +16,7 @@ using Robust.Shared.GameObjects;
 using Robust.Shared.Map;
 using Robust.Shared.Map.Components;
 using Robust.Shared.Prototypes;
+using Content.Shared.Station.Components;
 using Robust.Shared.Utility;
 using YamlDotNet.RepresentationModel;
 
@@ -30,8 +31,7 @@ namespace Content.IntegrationTests.Tests
         private static readonly string[] NoSpawnMaps =
         {
             "CentComm",
-            "Dart",
-            "NukieOutpost"
+            "Dart"
         };
 
         private static readonly string[] Grids =
@@ -54,7 +54,6 @@ namespace Content.IntegrationTests.Tests
             "Bagel",
             "Origin",
             "CentComm",
-            "NukieOutpost",
             "Box",
             "Europa",
             "Saltern",
@@ -65,10 +64,7 @@ namespace Content.IntegrationTests.Tests
             "Reach",
             "Train",
             "Oasis",
-            "CMDev",
-            "Savannah",
-            "Almayer",
-            "RMCAdminFax",
+            "Cog"
         };
 
         /// <summary>
@@ -227,11 +223,10 @@ namespace Content.IntegrationTests.Tests
                     {
                         shuttle = roots.First(uid => entManager.HasComponent<MapGridComponent>(uid));
                     }, $"Failed to load {shuttlePath}");
-                    // TODO RMC14 we don't use this shit!
-                    // Assert.That(
-                    //     shuttleSystem.TryFTLDock(shuttle,
-                    //         entManager.GetComponent<ShuttleComponent>(shuttle), targetGrid.Value),
-                    //     $"Unable to dock {shuttlePath} to {mapProto}");
+                    Assert.That(
+                        shuttleSystem.TryFTLDock(shuttle,
+                            entManager.GetComponent<ShuttleComponent>(shuttle), targetGrid.Value),
+                        $"Unable to dock {shuttlePath} to {mapProto}");
 #pragma warning restore NUnit2045
                 }
 

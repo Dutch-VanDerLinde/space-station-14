@@ -3,26 +3,25 @@ using Content.Server.Administration.Logs;
 using Content.Server.EUI;
 using Content.Server.Ghost.Roles.Components;
 using Content.Server.Ghost.Roles.Events;
+using Content.Shared.Ghost.Roles.Raffles;
 using Content.Server.Ghost.Roles.UI;
 using Content.Server.Mind.Commands;
-using Content.Server.Popups;
 using Content.Shared.Administration;
+using Content.Shared.CCVar;
 using Content.Shared.Database;
 using Content.Shared.Follower;
 using Content.Shared.GameTicking;
 using Content.Shared.Ghost;
 using Content.Shared.Ghost.Roles;
-using Content.Shared.Ghost.Roles.Raffles;
 using Content.Shared.Mind;
 using Content.Shared.Mind.Components;
 using Content.Shared.Mobs;
 using Content.Shared.Players;
 using Content.Shared.Roles;
-using Content.Shared.Verbs;
 using JetBrains.Annotations;
 using Robust.Server.GameObjects;
 using Robust.Server.Player;
-using Robust.Shared.Collections;
+using Robust.Shared.Configuration;
 using Robust.Shared.Console;
 using Robust.Shared.Enums;
 using Robust.Shared.Player;
@@ -33,12 +32,14 @@ using Robust.Shared.Utility;
 using Content.Server.Popups;
 using Content.Shared.Verbs;
 using Robust.Shared.Collections;
+using Content.Shared.Ghost.Roles.Components;
 
 namespace Content.Server.Ghost.Roles
 {
     [UsedImplicitly]
     public sealed class GhostRoleSystem : EntitySystem
     {
+        [Dependency] private readonly IConfigurationManager _cfg = default!;
         [Dependency] private readonly EuiManager _euiManager = default!;
         [Dependency] private readonly IPlayerManager _playerManager = default!;
         [Dependency] private readonly IAdminLogManager _adminLogger = default!;
@@ -82,6 +83,7 @@ namespace Content.Server.Ghost.Roles
             SubscribeLocalEvent<GhostRoleMobSpawnerComponent, TakeGhostRoleEvent>(OnSpawnerTakeRole);
             SubscribeLocalEvent<GhostTakeoverAvailableComponent, TakeGhostRoleEvent>(OnTakeoverTakeRole);
             SubscribeLocalEvent<GhostRoleMobSpawnerComponent, GetVerbsEvent<Verb>>(OnVerb);
+            SubscribeLocalEvent<GhostRoleMobSpawnerComponent, GhostRoleRadioMessage>(OnGhostRoleRadioMessage);
             _playerManager.PlayerStatusChanged += PlayerStatusChanged;
         }
 
@@ -357,7 +359,8 @@ namespace Content.Server.Ghost.Roles
 
             var raffle = ent.Comp;
             raffle.Identifier = ghostRole.Identifier;
-            raffle.Countdown = TimeSpan.FromSeconds(settings.InitialDuration);
+            var countdown = _cfg.GetCVar(CCVars.GhostQuickLottery)? 1 : settings.InitialDuration;
+            raffle.Countdown = TimeSpan.FromSeconds(countdown);
             raffle.CumulativeTime = TimeSpan.FromSeconds(settings.InitialDuration);
             // we copy these settings into the component because they would be cumbersome to access otherwise
             raffle.JoinExtendsDurationBy = TimeSpan.FromSeconds(settings.JoinExtendsDurationBy);
@@ -693,8 +696,6 @@ namespace Content.Server.Ghost.Roles
 
             if (component.DeleteOnSpawn)
                 QueueDel(uid);
-            else
-                UnregisterGhostRole((uid, ghostRole));
 
             args.TookRole = true;
         }
@@ -791,36 +792,19 @@ namespace Content.Server.Ghost.Roles
             }
         }
 
-        public void SetAvailable(Entity<GhostRoleMobSpawnerComponent> spawner, int available)
+        public void OnGhostRoleRadioMessage(Entity<GhostRoleMobSpawnerComponent> entity, ref GhostRoleRadioMessage args)
         {
-            if (spawner.Comp.AvailableTakeovers == available)
+            if (!_prototype.TryIndex(args.ProtoId, out var ghostRoleProto))
                 return;
 
-            spawner.Comp.AvailableTakeovers = available;
-            UpdateSpawner(spawner);
-        }
-
-        public void SetCurrent(Entity<GhostRoleMobSpawnerComponent> spawner, int current)
-        {
-            if (spawner.Comp.CurrentTakeovers == current)
-                return;
-
-            spawner.Comp.CurrentTakeovers = current;
-            UpdateSpawner(spawner);
-        }
-
-        private void UpdateSpawner(Entity<GhostRoleMobSpawnerComponent> spawner)
-        {
-            if (TryComp(spawner, out GhostRoleComponent? ghostRole))
+            // if the prototype chosen isn't actually part of the selectable options, ignore it
+            foreach (var selectableProto in entity.Comp.SelectablePrototypes)
             {
-                ghostRole.Taken = spawner.Comp.CurrentTakeovers >= spawner.Comp.AvailableTakeovers;
-                if (ghostRole.Taken)
-                    UnregisterGhostRole((spawner, ghostRole));
-                else
-                    RegisterGhostRole((spawner, ghostRole));
+                if (selectableProto == ghostRoleProto.EntityPrototype.Id)
+                    return;
             }
 
-            UpdateAllEui();
+            SetMode(entity.Owner, ghostRoleProto, ghostRoleProto.Name, entity.Comp);
         }
     }
 
