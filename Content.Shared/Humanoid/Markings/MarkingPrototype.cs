@@ -1,3 +1,4 @@
+using Content.Shared.DisplacementMap;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Utility;
 
@@ -34,6 +35,21 @@ namespace Content.Shared.Humanoid.Markings
 
         [DataField("sprites", required: true)]
         public List<SpriteSpecifier> Sprites { get; private set; } = default!;
+
+        [DataField]
+        public DisplacementData? DisplacementMap;
+
+        /// <summary>
+        /// Alternate displacement maps, which if available, will be selected for the player of the appropriate gender.
+        /// </summary>
+        [DataField]
+        public DisplacementData? FemaleDisplacementMap;
+
+        /// <summary>
+        /// Alternate displacement maps, which if available, will be selected for the player of the appropriate gender.
+        /// </summary>
+        [DataField]
+        public DisplacementData? MaleDisplacementMap;
 
         public Marking AsMarking()
         {

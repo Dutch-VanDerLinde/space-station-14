@@ -326,6 +326,11 @@
   bodyPart: Chest
   markingCategory: Chest
   speciesRestriction: [Reptilian]
+  femaleDisplacementMap:
+    sizeMaps:
+      32:
+        sprite: Mobs/Species/Human/displacement.rsi
+        state: jumpsuit-female
   sprites:
   - sprite: Mobs/Customization/reptilian_parts.rsi
     state: body_underbelly

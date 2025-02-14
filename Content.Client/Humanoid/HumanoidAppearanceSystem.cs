@@ -1,3 +1,4 @@
+using Content.Client.DisplacementMap;
 using Content.Shared.Humanoid;
 using Content.Shared.Humanoid.Markings;
 using Content.Shared.Humanoid.Prototypes;
@@ -10,6 +11,7 @@ namespace Content.Client.Humanoid;
 
 public sealed class HumanoidAppearanceSystem : SharedHumanoidAppearanceSystem
 {
+    [Dependency] private readonly DisplacementMapSystem _displacement = default!;
     [Dependency] private readonly IPrototypeManager _prototypeManager = default!;
     [Dependency] private readonly MarkingManager _markingManager = default!;
 
@@ -275,6 +277,18 @@ public sealed class HumanoidAppearanceSystem : SharedHumanoidAppearanceSystem
             return;
         }
 
+        var displacementData = markingPrototype.DisplacementMap; //Default unsexed map
+
+        switch (humanoid.Sex)
+        {
+            case Sex.Male:
+                displacementData = markingPrototype.MaleDisplacementMap;
+                break;
+            case Sex.Female:
+                displacementData = markingPrototype.FemaleDisplacementMap;
+                break;
+        }
+
         visible &= !IsHidden(humanoid, markingPrototype.BodyPart);
         visible &= humanoid.BaseLayers.TryGetValue(markingPrototype.BodyPart, out var setting)
            && setting.AllowsMarkings;
@@ -290,9 +304,9 @@ public sealed class HumanoidAppearanceSystem : SharedHumanoidAppearanceSystem
 
             var layerId = $"{markingPrototype.ID}-{rsi.RsiState}";
 
-            if (!sprite.LayerMapTryGet(layerId, out _))
+            if (!sprite.LayerMapTryGet(layerId, out var layer))
             {
-                var layer = sprite.AddLayer(markingSprite, targetLayer + j + 1);
+                layer = sprite.AddLayer(markingSprite, targetLayer + j + 1);
                 sprite.LayerMapSet(layerId, layer);
                 sprite.LayerSetSprite(layerId, rsi);
             }
@@ -314,6 +328,12 @@ public sealed class HumanoidAppearanceSystem : SharedHumanoidAppearanceSystem
             else
             {
                 sprite.LayerSetColor(layerId, Color.White);
+            }
+
+            if (displacementData is not null)
+            {
+                var revealedLayers = new HashSet<string> { layerId };
+                _displacement.TryAddDisplacement(displacementData, sprite, layer, layerId, revealedLayers);
             }
         }
     }
