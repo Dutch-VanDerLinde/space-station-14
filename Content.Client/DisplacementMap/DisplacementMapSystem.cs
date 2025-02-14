@@ -55,6 +55,9 @@ public sealed class DisplacementMapSystem : EntitySystem
         var displacementLayer = _serialization.CreateCopy(displacementDataLayer, notNullableOverride: true);
         displacementLayer.CopyToShaderParameters!.LayerKey = key;
 
+        if (sprite.LayerExists(displacementKey)) // remove duplicate layer
+            sprite.RemoveLayer(displacementKey);
+
         sprite.AddLayer(displacementLayer, index);
         sprite.LayerMapSet(displacementKey, index);
 

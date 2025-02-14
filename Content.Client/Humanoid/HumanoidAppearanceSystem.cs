@@ -332,7 +332,7 @@ public sealed class HumanoidAppearanceSystem : SharedHumanoidAppearanceSystem
 
             if (displacementData is not null)
             {
-                var revealedLayers = new HashSet<string> { layerId };
+                var revealedLayers = new HashSet<string>();
                 _displacement.TryAddDisplacement(displacementData, sprite, layer, layerId, revealedLayers);
             }
         }
